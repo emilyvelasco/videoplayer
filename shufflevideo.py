@@ -1,12 +1,11 @@
-import RPi.GPIO as GPIO
+#!/usr/bin/env python2
+import gpiozero
 import sys
 import os
 from subprocess import Popen
 import time
 import random
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 movie1 = ("/home/pi/Videos/video1.mp4")
 movie2 = ("/home/pi/Videos/video2.mp4")
 movie3 = ("/home/pi/Videos/video3.mp4")
@@ -26,38 +25,74 @@ movie16 = ("/home/pi/Videos/video16.mp4")
 movie17 = ("/home/pi/Videos/video17.mp4")
 movie18 = ("/home/pi/Videos/video18.mp4")
 movie19 = ("/home/pi/Videos/video19.mp4")
-last_state1 = False
-input_state1 = False
-player = False
-movie_list = [movie1, movie2, movie3, movie4, movie5, movie6, movie7, movie8, movie9, movie10, movie11, movie12, movie13, movie14, movie15, movie16, movie17, movie18, movie19]
+movie20 = ("/home/pi/Videos/video20.mp4")
+movie21 = ("/home/pi/Videos/video21.mp4")
+movie22 = ("/home/pi/Videos/video22.mp4")
+movie23 = ("/home/pi/Videos/video23.mp4")
+movie24 = ("/home/pi/Videos/video24.mp4")
+movie25 = ("/home/pi/Videos/video25.mp4")
+movie26 = ("/home/pi/Videos/video26.mp4")
+movie27 = ("/home/pi/Videos/video27.mp4")
+movie28 = ("/home/pi/Videos/video28.mp4")
+movie29 = ("/home/pi/Videos/video29.mp4")
+movie30 = ("/home/pi/Videos/video30.mp4")
+movie31 = ("/home/pi/Videos/video31.mp4")
+movie32 = ("/home/pi/Videos/video32.mp4")
+movie33 = ("/home/pi/Videos/video33.mp4")
+movie34 = ("/home/pi/Videos/video34.mp4")
+movie35 = ("/home/pi/Videos/video35.mp4")
+movie36 = ("/home/pi/Videos/video36.mp4")
+movie37 = ("/home/pi/Videos/video37.mp4")
+movie38 = ("/home/pi/Videos/video38.mp4")
+movie39 = ("/home/pi/Videos/video39.mp4")
+movie40 = ("/home/pi/Videos/video40.mp4")
+movie41 = ("/home/pi/Videos/video41.mp4")
+movie42 = ("/home/pi/Videos/video42.mp4")
+movie43 = ("/home/pi/Videos/video43.mp4")
+movie44 = ("/home/pi/Videos/video44.mp4")
+movie45 = ("/home/pi/Videos/video45.mp4")
+movie46 = ("/home/pi/Videos/video46.mp4")
+movie47 = ("/home/pi/Videos/video47.mp4")
+movie48 = ("/home/pi/Videos/video48.mp4")
+
+movie_list = [movie1, movie2, movie3, movie4, movie5, movie6, movie7, movie8, movie9, movie10, movie11, movie12, movie13, movie14, movie15, movie16, movie17, movie18, movie19, movie20, movie21, movie22, movie23, movie24, movie25, movie26, movie27, movie28, movie29, movie30, movie31, movie32, movie33, movie34, movie35, movie36, movie37, movie38, movie39, movie40, movie41, movie42, movie43, movie44, movie45, movie46, movie47, movie48]
 
 # Shuffle the movies, this modifies the list in-place
 random.shuffle(movie_list)
-current_movie_no = 0
+print(movie_list)
 
+null = open('/dev/null', 'w')
 
-while True:
-    #Read states of inputs
-    input_state1 = GPIO.input(17)
-
-    print input_state1
-    #If GPIO(17) is shorted to ground
-    if input_state1 != last_state1:
-        if player:
-            os.system('killall omxplayer.bin')
-        if input_state1:
+def button_handler(movie_list):
+    omxc = [None]
+    current_movie_no = [0]
+    
+    def button_handler_func():
+        if omxc[0] and omxc[0].poll() is None:
+            # may need kill() here instead of terminate()
+            omxc[0].kill()
+            omxc[0].wait()
+            # expeiment with sleep time here; may not be needed
+            time.sleep(1)
+        else:
             # Increment the current movie. It's just an index into the
             # movie_list. Also, to keep it from being more than the
             # length of the movie_list, use "%" to wrap it back around
             # to 0. This is like a playlist on shuffle and repeat.
-            current_movie_no = (current_movie_no + 1) % len(movie_list)
-            current_movie = movie_list[current_movie_no]
+            current_movie_no[0] = (current_movie_no[0] + 1) % len(movie_list)
+            current_movie = movie_list[current_movie_no[0]]
+                
+            omxc[0] = Popen(['omxplayer', '-o', 'local', '-b', '--win',
+                             '-50 0 690 480', current_movie], stdout=null,
+                            stderr=null)
 
-            omxc = Popen(['omxplayer', '-b', '--win','0 50 690 480', current_movie])
-            player = True
-            time.sleep(98)
-            
-        
+    return button_handler_func
 
-    #Set last_input states
-    last_state1 = input_state1
+# experiment with hold time here
+# also with bounce time
+button = gpiozero.Button(pin=17, pull_up=False, hold_time=0.01, bounce_time=None)
+button.when_pressed = button_handler(movie_list)
+
+while(True):
+    time.sleep(0.3)
+    pass
